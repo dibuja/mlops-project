@@ -1,7 +1,6 @@
-import pandas as pd
 import numpy as np
 import torch
-from torch import nn, optim
+from torch import nn
 from transformers import BertModel, BertTokenizer, AdamW,get_linear_schedule_with_warmup
 from collections import defaultdict
 from torch.utils.data import Dataset, DataLoader
