@@ -1,5 +1,6 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/$PROJECT_ID/train:latest', '.']
+  entrypoint: 'bash'
+  args: ['-c','docker build -t gcr.io/$PROJECT_ID/train -f train.Dockerfile .']
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'gcr.io/$PROJECT_ID/train:latest'] 
+  args: ['push', 'gcr.io/$PROJECT_ID/train']
