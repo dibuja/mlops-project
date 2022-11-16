@@ -12,17 +12,27 @@ import torch.nn.functional as F
 from transformers import BertTokenizer
 from torch.utils.data import Dataset, DataLoader
 from sklearn.metrics import confusion_matrix
-
 from src.data.make_dataset import read_data
+
+import hydra
+from hydra.utils import to_absolute_path
 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
 class GenDataset(Dataset):
-  def __init__(self, text, stars_review):
+  """
+  Creates the dataset of all reviews
+  Arguments:
+      text: a numpy array containing the review
+      stars_review: a numpy array containing the stars given from 1-5
+  Returns:
+      The dataset used later by the data loader
+  """
+  def __init__(self, text, stars_review,model_type,max_len):
     self.text = text
     self.stars_review = stars_review
-    self.tokenizer = BertTokenizer.from_pretrained('bert-base-cased')
-    self.max_len = MAX_LEN
+    self.tokenizer = BertTokenizer.from_pretrained(model_type)
+    self.max_len = max_len
   
   def __len__(self):
     return len(self.text)
@@ -48,18 +58,32 @@ class GenDataset(Dataset):
       'stars_review': torch.tensor(star, dtype=torch.long)
     }
 
-def create_data_loader(df):
+def create_data_loader(df,batch_size,model_type,max_len):
+  """
+  Uses the reviews (text and score) to create a Dataset for a later creation of a Data Loader which is going to be used in the training process
+  """
   ds = GenDataset(
     text=df.text.to_numpy(),
-    stars_review=df.stars_review.to_numpy()
+    stars_review=df.stars_review.to_numpy(),
+    model_type=model_type,
+    max_len=max_len
   )
 
   return DataLoader(
     ds,
-    batch_size=BATCH_SIZE
+    batch_size=batch_size
   )
 
 def get_predictions(model, test_dl):
+  """
+  Gets predictions for the test data used for the trained model
+  Arguments:
+      model: the trained model used to get predictions
+      test_dl: the dataset used to get predictions
+  Returns:
+      The numeric rating predictions for the given reviews
+  """
+
   model = model.eval()
   
   review_texts = []
@@ -90,17 +114,28 @@ def get_predictions(model, test_dl):
 
   return review_texts, torch.stack(predictions).cpu(), torch.stack(real_values).cpu(), torch.stack(prediction_probs).cpu()
 
+
+@hydra.main(config_path="config", config_name="default_config.yaml")
 def predict():
+    """
+    Utilises the previously defined functions to make the predictions.
+    """
+
+    cfg = cfg.experiment
+    model_type = cfg.model
+    batch_size = cfg.hyper_param.batch_size
+    max_len = cfg.max_len
+    torch.manual_seed(cfg.seed)
 
     # Data loading
     _, _, test = read_data()
-    test_dl = create_data_loader(test)
+    test_dl = create_data_loader(test,batch_size,model_type,max_len)
     
     # Model loading
     model = torch.load('best_model_state.bin')
 
     y_review_texts, y_pred, y_test, y_pred_probs = get_predictions(model, test_dl)
-
+  
     cm = confusion_matrix(y_test, y_pred)
     df_cm = pd.DataFrame(cm, index=[1,2,3,4,5], columns=[1,2,3,4,5])
     sns.heatmap(df_cm, annot=True, fmt="d", cmap="Blues")

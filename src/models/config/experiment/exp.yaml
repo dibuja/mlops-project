@@ -1,0 +1,13 @@
+hyper_param:
+    lr: 0.0002
+    epochs: 2
+    batch_size: 16
+
+max_len: 140
+
+seed: 1234
+model: "bert-base-cased"
+
+# Chanfe when google is set
+google_bucket_path: None 
+local_path: "models"

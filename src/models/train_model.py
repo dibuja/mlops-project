@@ -4,22 +4,31 @@ from torch import nn
 from transformers import BertModel, BertTokenizer, AdamW,get_linear_schedule_with_warmup
 from collections import defaultdict
 from torch.utils.data import Dataset, DataLoader
-
 from src.data.make_dataset import read_data
 
-# TODO: Should be moved to .env file.
-BATCH_SIZE = 16
-MAX_LEN = 140
-EPOCHS = 2
+import hydra
+from omegaconf import DictConfig
+from hydra.utils import to_absolute_path
+
 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
+
 class GenDataset(Dataset):
-  def __init__(self, text, stars_review):
+  """
+  Creates the dataset of all reviews
+  Arguments:
+      text: a numpy array containing the review
+      stars_review: a numpy array containing the stars given from 1-5
+  Returns:
+      The dataset used later by the data loader
+  """
+
+  def __init__(self, text, stars_review,model_type,max_len):
     self.text = text
     self.stars_review = stars_review
-    self.tokenizer = BertTokenizer.from_pretrained('bert-base-cased')
-    self.max_len = MAX_LEN
+    self.tokenizer = BertTokenizer.from_pretrained(model_type)
+    self.max_len = max_len
   
   def __len__(self):
     return len(self.text)
@@ -46,6 +55,11 @@ class GenDataset(Dataset):
     }
 
 class FineGrainedSentClassifier(nn.Module):
+  """
+  Creates the fine grained sentiment classifier based on the BERT MODEL
+  Arguments:
+      n_classes: an integer which defines the number of classes
+  """
 
   def __init__(self, n_classes):
     super(FineGrainedSentClassifier, self).__init__()
@@ -61,18 +75,36 @@ class FineGrainedSentClassifier(nn.Module):
     output = self.drop(pooled_output)
     return self.out(output)
 
-def create_data_loader(df):
+def create_data_loader(df,model_type,batch_size,max_len):
+  """
+  Uses the reviews (text and score) to create a Dataset for a later creation of a Data Loader which is going to be used in the training process
+  """
+
+  
   ds = GenDataset(
     text=df.text.to_numpy(),
-    stars_review=df.stars_review.to_numpy()
+    stars_review=df.stars_review.to_numpy(),
+    model_type=model_type,
+    max_len=max_len
   )
 
   return DataLoader(
     ds,
-    batch_size=BATCH_SIZE
+    batch_size=batch_size
   )
 
 def train_epoch(model, data_loader, loss_fn, optimizer, length):
+  """
+  Trains the model with the data previously stored in the dataloader
+  Arguments:
+      model: the bert model
+      data_loader: a DataLoader with the dataset generated with the reviews
+      loss_fn: a loss function
+      optimizer: an optimizer (AdamW in that case)
+      length: an integer defining the length of the dataset
+  Returns:
+      Two integers indicating the accuracy and loss of the model
+  """
 
   correct_predictions = 0
   p_loss = []
@@ -103,6 +135,16 @@ def train_epoch(model, data_loader, loss_fn, optimizer, length):
   return correct_predictions.double() / length, np.mean(p_loss)
 
 def eval_model(model, data_loader, loss_fn, length):
+  """
+  Evaluates the model with the test data
+  Arguments:
+      model: the bert model
+      data_loader: a DataLoader with the dataset generated with the reviews
+      loss_fn: a loss function
+      length: an integer defining the length of the dataset
+  Returns:
+      An integer indicating the accuracy/loss of the model
+  """
   
   correct_predictions = 0
   p_loss = []
@@ -128,12 +170,24 @@ def eval_model(model, data_loader, loss_fn, length):
 
   return correct_predictions.double() / length, np.mean(p_loss)
 
+@hydra.main(config_path="config", config_name="default_config.yaml")
 def train():
+    """
+    Function used to train the model through different epoch and evaluate with the previous defined functions
+    """
+
+    cfg = cfg.experiment
+    model_type = cfg.model
+    epoch = cfg.hyper_param.epoch
+    batch_size = cfg.hyper_param.batch_size
+    max_len = cfg.max_len
+    torch.manual_seed(cfg.seed)
+
     train, val, test = read_data()
 
-    train_dl = create_data_loader(train)
-    val_dl= create_data_loader(val)
-    test_dl = create_data_loader(test)
+    train_dl = create_data_loader(train,model_type,batch_size,max_len)
+    val_dl= create_data_loader(val,model_type,batch_size,max_len)
+    test_dl = create_data_loader(test,model_type,batch_size),max_len
 
     data = next(iter(train_dl))
 
@@ -144,14 +198,14 @@ def train():
     input_ids = data['input_ids'].to(device)
     attention_mask = data['attention_mask'].to(device)
 
-    optimizer = AdamW(model.parameters(), lr=2e-5, correct_bias=False)
-    scheduler = get_linear_schedule_with_warmup(optimizer,num_warmup_steps=0,num_training_steps=len(train_dl) * EPOCHS)
+    optimizer = AdamW(model.parameters(), lr=cfg.hyper_param.lr, correct_bias=False)
+    scheduler = get_linear_schedule_with_warmup(optimizer,num_warmup_steps=0,num_training_steps=len(train_dl) * epoch)
     loss_fn = nn.CrossEntropyLoss().to(device)
 
     history = defaultdict(list)
     best_acc = 0
 
-    for count, epoch in enumerate(range(EPOCHS)):
+    for count, epoch in enumerate(range(epoch)):
 
         print('Epoch number:  '+str(count+1))
         print('----------------------------')
