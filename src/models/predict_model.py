@@ -13,6 +13,7 @@ from transformers import BertTokenizer
 from torch.utils.data import Dataset, DataLoader
 from sklearn.metrics import confusion_matrix
 from src.data.make_dataset import read_data
+import pickle
 
 import hydra
 from hydra.utils import to_absolute_path
@@ -132,7 +133,7 @@ def predict():
     test_dl = create_data_loader(test,batch_size,model_type,max_len)
     
     # Model loading
-    model = torch.load('best_model_state.bin')
+    model = pickle.load(open('model.pkl', 'rb'))
 
     y_review_texts, y_pred, y_test, y_pred_probs = get_predictions(model, test_dl)
   

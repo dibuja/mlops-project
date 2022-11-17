@@ -5,6 +5,7 @@ from transformers import BertModel, BertTokenizer, AdamW,get_linear_schedule_wit
 from collections import defaultdict
 from torch.utils.data import Dataset, DataLoader
 from src.data.make_dataset import read_data
+import pickle
 
 import hydra
 from omegaconf import DictConfig
@@ -225,7 +226,9 @@ def train():
         history['val_loss'].append(val_loss)
 
         if val_acc >= best_acc:
-            torch.save(model.state_dict(), 'best_model_state.bin')
+            # Save to pickle file
+            # TODO: Save the model directly in GCP
+            pickle.dump(model, open('model.pkl', 'wb'))
             best_acc = val_acc
 
     test_acc, _ = eval_model(model,test_dl,loss_fn,len(test))
