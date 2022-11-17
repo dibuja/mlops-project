@@ -13,7 +13,7 @@ The topic of the project consists of classifying reviews of businesses and try t
 The following features have been implemented:
 
 - [x] Using the cookie cutter structure
-- [x] Pre-commits with code formatting and checking
+- [x] Pre-commits with code formatting and checking  
 - [x] Separation of the algorithms in make_dataset, model file and training scripts
 - [x] Requirements.txt file
 - [x] Dedicated Conda environment for the project
