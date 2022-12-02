@@ -16,3 +16,4 @@ setuptools==49.2.1
 torch==1.11.0
 transformers==4.17.0
 hydra-core==1.2.0
+dvc
