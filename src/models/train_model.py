@@ -10,7 +10,14 @@ import pickle
 import hydra
 from omegaconf import DictConfig
 from hydra.utils import to_absolute_path
+import wandb
 
+wandb.login()
+
+wandb.init(project='project-mlops', entity="dtumlops36")
+
+yaml_path = '/src/models/config/experiment/exp.yaml'
+yaml_path = wandb.config
 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
@@ -168,6 +175,8 @@ def eval_model(model, data_loader, loss_fn, length):
       
       correct_predictions += torch.sum(preds == stars_review)
       p_loss.append(loss.item())
+      
+      wandb.log({"test_accuracy": correct_predictions.double() / length})
 
   return correct_predictions.double() / length, np.mean(p_loss)
 
@@ -195,6 +204,8 @@ def train():
     classes = sorted(train.stars_review.unique())
 
     model = FineGrainedSentClassifier(len(classes)).to(device)
+    
+    wandb.watch(model)
 
     input_ids = data['input_ids'].to(device)
     attention_mask = data['attention_mask'].to(device)
@@ -214,6 +225,8 @@ def train():
         train_acc, train_loss = train_epoch(model,train_dl,loss_fn, optimizer,len(train))
 
         print(f'Train loss {train_loss} accuracy {train_acc}')
+        
+        wandb.log({"epoch": epoch, "loss": train_loss})
 
         val_acc, val_loss = eval_model(model,val_dl,loss_fn, len(val))
 
