@@ -6,6 +6,11 @@ from collections import defaultdict
 from torch.utils.data import Dataset, DataLoader
 from src.data.make_dataset import read_data
 import pickle
+import matplotlib
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+
 
 import hydra
 from omegaconf import DictConfig
@@ -98,7 +103,7 @@ def create_data_loader(df,model_type,batch_size,max_len):
 
   return DataLoader(
     ds,
-    batch_size=batch_size
+    batch_size=BATCH_SIZE
   )
 
 def train_epoch(model, data_loader, loss_fn, optimizer, length):
@@ -182,22 +187,11 @@ def eval_model(model, data_loader, loss_fn, length):
 
 @hydra.main(config_path="config", config_name="default_config.yaml")
 def train():
-    """
-    Function used to train the model through different epoch and evaluate with the previous defined functions
-    """
-
-    cfg = cfg.experiment
-    model_type = cfg.model
-    epoch = cfg.hyper_param.epoch
-    batch_size = cfg.hyper_param.batch_size
-    max_len = cfg.max_len
-    torch.manual_seed(cfg.seed)
-
     train, val, test = read_data()
 
     train_dl = create_data_loader(train,model_type,batch_size,max_len)
     val_dl= create_data_loader(val,model_type,batch_size,max_len)
-    test_dl = create_data_loader(test,model_type,batch_size),max_len
+    test_dl = create_data_loader(test,model_type,batch_size,max_len)
 
     data = next(iter(train_dl))
 
@@ -233,9 +227,9 @@ def train():
         print(f'Val loss {val_loss} accuracy {val_acc}')
         print()
 
-        history['train_acc'].append(train_acc)
+        history['train_acc'].append(train_acc.item())
         history['train_loss'].append(train_loss)
-        history['val_acc'].append(val_acc)
+        history['val_acc'].append(val_acc.item())
         history['val_loss'].append(val_loss)
 
         if val_acc >= best_acc:
@@ -247,6 +241,27 @@ def train():
     test_acc, _ = eval_model(model,test_dl,loss_fn,len(test))
 
     print('Accuracy: '+str(test_acc.item()))
+
+
+    train_df = pd.DataFrame(data={'loss': history['train_acc'], 'index': range(0,epoch+1)})
+    train_loss_df = pd.DataFrame(data={'acc': history['train_loss'], 'index': range(0,epoch+1)})
+    test_df = pd.DataFrame(data={'loss': history['val_acc'], 'index': range(0,epoch+1)})
+    test_loss_df = pd.DataFrame(data={'acc': history['val_loss'], 'index': range(0,epoch+1)})
+    plt.show()
+    plt.savefig("../visualization/Model Train plot.jpg", bbox_inches='tight')
+
+    sns.lineplot(x = "index", y = "loss", data=train_df).set_title("Training loss")
+    sns.lineplot(x = "index", y = "acc", data=train_loss_df).set_title("Training acc")
+
+    test_df = pd.DataFrame(data={'loss': history['val_acc'], 'index': range(0,epoch+1)})
+    sns.lineplot(x = "index", y = "loss", data=test_df).set_title("Training loss")
+    plt.show()
+    plt.savefig("../visualization/Model Test Accuracy.jpg", bbox_inches='tight')
+
+    test_loss_df = pd.DataFrame(data={'acc': history['val_loss'], 'index': range(0,epoch+1)})
+    sns.lineplot(x = "index", y = "acc", data=test_loss_df).set_title("Training acc") 
+    plt.show()
+    plt.savefig("../visualization/Model Test Loss.jpg", bbox_inches='tight')
 
 if __name__ == '__main__':
     train()
