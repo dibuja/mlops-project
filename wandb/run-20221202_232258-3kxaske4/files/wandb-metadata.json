@@ -1,0 +1,21 @@
+{
+    "os": "Linux-5.15.0-53-generic-x86_64-with-glibc2.35",
+    "python": "3.9.12",
+    "heartbeatAt": "2022-12-02T22:23:05.195130",
+    "startedAt": "2022-12-02T22:22:58.871150",
+    "docker": null,
+    "cpu_count": 8,
+    "cuda": null,
+    "args": null,
+    "state": "running",
+    "program": "<python with no main file>",
+    "git": {
+        "remote": "https://github.com/dibuja/mlops-project.git",
+        "commit": "04be2652eddb4d44221fc001664028d75205ee79"
+    },
+    "email": "mitsoss.salo@gmail.com",
+    "root": "/home/dimitris/Documents/MLOps/final_project/github_1/mlops-project",
+    "host": "dimitris-Lenovo-IdeaPad-S145-15IWL",
+    "username": "dimitris",
+    "executable": "/home/dimitris/anaconda3/bin/python"
+}
