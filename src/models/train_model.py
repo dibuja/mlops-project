@@ -237,6 +237,14 @@ def train():
             # TODO: Save the model directly in GCP
             pickle.dump(model, open('model.pkl', 'wb'))
             best_acc = val_acc
+            
+        wandb.log({
+            'epoch': epoch,
+            'train_acc': train_acc,
+            'train_loss': train_loss,
+            'val_acc': val_acc,
+            'val_loss': val_loss
+        })
 
     test_acc, _ = eval_model(model,test_dl,loss_fn,len(test))
 
