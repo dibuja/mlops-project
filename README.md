@@ -13,14 +13,16 @@ The topic of the project consists of classifying reviews of businesses and try t
 The following features have been implemented:
 
 - [x] Using the cookie cutter structure
-- [x] Pre-commits with code formatting and checking  
-- [x] Separation of the algorithms in make_dataset, model file and training scripts
-- [x] Requirements.txt file
-- [x] Dedicated Conda environment for the project
-- [x] Compliance with pep8 coding conventions
-- [x] Usage of Google Cloud Platform for data storage, model deployment
-- [x] Experiment testing using Hydra
-- [x] pre-commit hooks
+- [x] Pre-commits with code formatting and checking   
+- [x] Separation of the algorithms in make_dataset, model file and training scripts  
+- [x] Requirements.txt file  
+- [x] Dedicated Conda environment for the project  
+- [x] Compliance with pep8 coding conventions  
+- [x] Usage of Google Cloud Platform for data storage, model deployment  
+- [x] Experiment testing using Hydra  
+- [x] pre-commit hooks  
+- [x] Data version control with DVC
+- [x] Monitoring using Wandb  
 
 ### Authors
 
