@@ -124,7 +124,7 @@ executing==0.8.3
 fastjsonschema==2.16.2
 filelock==3.6.0
 flake8==4.0.1
-flask==1.1.2
+flask==2.2.5
 flatten-dict==0.4.2
 flufl.lock==7.1.1
 fonttools==4.25.0
