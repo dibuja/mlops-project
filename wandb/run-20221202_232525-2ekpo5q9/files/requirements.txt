@@ -438,7 +438,7 @@ wcwidth==0.2.5
 webdav4==0.9.8
 webencodings==0.5.1
 websocket-client==0.58.0
-werkzeug==2.0.3
+werkzeug==2.2.3
 whatthepatch==1.0.2
 wheel==0.37.1
 widgetsnbextension==3.5.2
