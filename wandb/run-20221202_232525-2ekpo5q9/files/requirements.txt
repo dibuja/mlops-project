@@ -420,7 +420,7 @@ torchvision==0.13.1
 tornado==6.1
 tqdm==4.64.1
 traitlets==5.1.1
-transformers==4.24.0
+transformers==4.30.0
 twisted==22.2.0
 typed-ast==1.4.3
 typing-extensions==4.3.0
