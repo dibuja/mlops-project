@@ -306,7 +306,7 @@ pydrive2==1.15.0
 pyerfa==2.0.0
 pyflakes==2.4.0
 pygit2==1.11.1
-pygments==2.11.2
+pygments==2.15.0
 pygtrie==2.5.0
 pyhamcrest==2.0.2
 pyjwt==2.4.0
