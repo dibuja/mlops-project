@@ -135,7 +135,7 @@ future==0.18.2
 gcsfs==2022.11.0
 gensim==4.1.2
 gitdb==4.0.9
-gitpython==3.1.28
+gitpython==3.1.32
 glob2==0.7
 gmpy2==2.1.2
 google-api-core==1.33.2
