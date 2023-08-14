@@ -357,7 +357,7 @@ scikit-learn-intelex==2021.20221004.171807
 scikit-learn==1.0.2
 scipy==1.7.3
 scmrepo==0.1.3
-scrapy==2.6.1
+scrapy==2.10.0
 seaborn==0.12.0
 secretstorage==3.3.1
 send2trash==1.8.0
